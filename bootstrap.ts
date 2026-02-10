@@ -7,10 +7,14 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
-import { NexInterpreter, NexGraph } from "./nex-runtime";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { NexInterpreter, NexGraph } from "./nex-runtime.js";
 
 async function main() {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  
   console.log("═══════════════════════════════════════════════════════════════");
   console.log("  Nex Bootstrap v1.0 — 2026 Agent-Native Language Invocation");
   console.log("═══════════════════════════════════════════════════════════════\n");
