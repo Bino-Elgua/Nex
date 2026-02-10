@@ -1,0 +1,31 @@
+{
+  "name": "nex",
+  "version": "1.0.0",
+  "description": "Agent-native graph-based computation system with 7 core primitives",
+  "main": "dist/nex-runtime.js",
+  "type": "module",
+  "scripts": {
+    "bootstrap": "bun bootstrap.ts",
+    "build": "tsc --outDir dist",
+    "test": "bun test",
+    "dev": "bun run bootstrap.ts",
+    "lint": "oxlint --fix",
+    "format": "oxfmt --fix ."
+  },
+  "keywords": [
+    "agent",
+    "graph",
+    "computation",
+    "bootstrap",
+    "interpreter",
+    "llm",
+    "self-modification"
+  ],
+  "author": "Nex Core Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}
