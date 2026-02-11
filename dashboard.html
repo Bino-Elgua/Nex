@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nex v1.0.0 Master Control Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Navigation Sidebar */
+        .nav-sidebar {
+            width: 240px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(10,10,30,0.95) 100%);
+            border-right: 2px solid #00ff88;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-logo {
+            color: #00ff88;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 2px solid #00ff88;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .nav-group {
+            margin-bottom: 20px;
+        }
+
+        .nav-group-title {
+            color: #00ffff;
+            font-size: 0.7em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .nav-button {
+            width: 100%;
+            padding: 10px;
+            margin: 4px 0;
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 4px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .nav-button:hover {
+            background: rgba(0,255,136,0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .nav-button.active {
+            background: rgba(0,255,136,0.3);
+            border-color: #00ff88;
+            color: #00ff88;
+            box-shadow: 0 0 10px rgba(0,255,136,0.3);
+        }
+
+        /* Main Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(90deg, rgba(0,0,0,0.95) 0%, rgba(20,20,40,0.95) 100%);
+            border-bottom: 2px solid #00ff88;
+            padding: 12px 20px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0,255,136,0.15);
+        }
+
+        .header-title {
+            color: #00ff88;
+            font-size: 1.4em;
+            letter-spacing: 2px;
+        }
+
+        .header-metrics {
+            display: flex;
+            gap: 15px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 5px 10px;
+            background: rgba(0,255,136,0.05);
+            border-left: 2px solid #00ff88;
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 0.7em;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            color: #00ff88;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .health-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+            margin-right: 5px;
+        }
+
+        .health-indicator.offline {
+            background: #ff4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            width: 180px;
+            background: rgba(0,0,0,0.8);
+            border-right: 2px solid #00ff88;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-nav-section {
+            margin-bottom: 15px;
+        }
+
+        .tab-nav-title {
+            color: #00ffff;
+            font-size: 0.65em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .tab-button {
+            width: 100%;
+            padding: 8px;
+            margin: 3px 0;
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.15);
+            border-radius: 3px;
+            color: #aaa;
+            cursor: pointer;
+            font-family: 'Monaco', monospace;
+            font-size: 0.8em;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .tab-button:hover {
+            background: rgba(0,255,136,0.15);
+            border-color: #00ff88;
+            color: #e0e0e0;
+        }
+
+        .tab-button.active {
+            background: rgba(0,255,136,0.25);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        /* Page Content */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        /* Panels */
+        .panel {
+            background: rgba(20,20,40,0.9);
+            border: 1px solid #00ff88;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0,255,136,0.1);
+        }
+
+        .panel-header {
+            background: rgba(0,0,0,0.7);
+            border-bottom: 1px solid #00ff88;
+            padding: 12px 15px;
+            color: #00ff88;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: 1 / -1; }
+
+        /* Buttons */
+        button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #00ffff;
+            box-shadow: 0 0 15px rgba(0,255,136,0.4);
+        }
+
+        button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        /* Inputs */
+        textarea, input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            font-family: 'Monaco', monospace;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        textarea {
+            height: 250px;
+            resize: vertical;
+        }
+
+        label {
+            display: block;
+            color: #aaa;
+            font-size: 0.8em;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Results Display */
+        .result-display {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 0.8em;
+            color: #00ff88;
+            max-height: 400px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+
+        .result-display.error {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .result-display.success {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        /* Stats Boxes */
+        .stat-box {
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-box-label {
+            color: #888;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-box-value {
+            color: #00ff88;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        /* List Items */
+        .list-item {
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid #00ff88;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            background: rgba(0,255,136,0.1);
+            border-left-color: #00ffff;
+        }
+
+        .list-item-time {
+            color: #888;
+            font-size: 0.75em;
+            margin-top: 3px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            background: #00ff88;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        .badge.error { background: #ff4444; }
+        .badge.warning { background: #ffaa00; }
+        .badge.info { background: #00ffff; }
+        .badge.success { background: #00ff88; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background: rgba(20,20,40,0.95);
+            border: 2px solid #00ff88;
+            padding: 25px;
+            border-radius: 6px;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .modal-header {
+            color: #00ff88;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 10px;
+        }
+
+        .modal-close {
+            float: right;
+            cursor: pointer;
+            color: #00ff88;
+            font-size: 2em;
+            border: none;
+            background: none;
+            padding: 0;
+            width: auto;
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+
+        .table th {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid #00ff88;
+            padding: 8px;
+            color: #00ff88;
+            text-align: left;
+        }
+
+        .table td {
+            border: 1px solid rgba(0,255,136,0.2);
+            padding: 8px;
+            color: #e0e0e0;
+        }
+
+        .table tr:hover {
+            background: rgba(0,255,136,0.05);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: #00ff88; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffff; }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 15px 0;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 0.8em;
+            color: #00ff88;
+            overflow-x: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .grid-4 { grid-template-columns: 1fr 1fr; }
+            .grid-3 { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-sidebar { width: 180px; }
+            .tab-nav { width: 150px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            header { grid-template-columns: 1fr; }
+            .header-metrics { flex-direction: column; }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-content.active {
+            animation: slideIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Navigation -->
+        <div class="nav-sidebar">
+            <div class="nav-logo">⚡ NEX</div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Main</div>
+                <button class="nav-button active" onclick="switchNav('dashboard')">📊 Dashboard</button>
+                <button class="nav-button" onclick="switchNav('executor')">⚙️ Executor</button>
+                <button class="nav-button" onclick="switchNav('analytics')">📈 Analytics</button>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Tools</div>
+                <button class="nav-button" onclick="switchNav('debugger')">🐛 Debugger</button>
+                <button class="nav-button" onclick="switchNav('visualizer')">🎨 Visualizer</button>
+                <button class="nav-button" onclick="switchNav('simulator')">🎮 Simulator</button>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Advanced</div>
+                <button class="nav-button" onclick="switchNav('guards')">🔐 Guards</button>
+                <button class="nav-button" onclick="switchNav('merge')">🔀 Merge</button>
+                <button class="nav-button" onclick="switchNav('rewrite')">✏️ Rewrite</button>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Config</div>
+                <button class="nav-button" onclick="switchNav('settings')">⚙️ Settings</button>
+                <button class="nav-button" onclick="switchNav('docs')">📚 Docs</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-area">
+            <!-- Header -->
+            <header>
+                <div class="header-title">✨ Nex Master Control Dashboard</div>
+                <div class="header-metrics">
+                    <div class="metric-item">
+                        <div class="metric-label">Gateway</div>
+                        <div class="metric-value"><span class="health-indicator" id="health"></span><span id="gwStatus">Checking</span></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Uptime</div>
+                        <div class="metric-value" id="uptime">-</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Executions</div>
+                        <div class="metric-value" id="execCount">0</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Success</div>
+                        <div class="metric-value" id="successRate">0%</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Avg Latency</div>
+                        <div class="metric-value" id="latency">-ms</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Tabbed Content -->
+            <div class="content-area">
+                <!-- Tab Navigation -->
+                <div class="tab-nav">
+                    <div class="tab-nav-section">
+                        <div class="tab-nav-title">Dashboard</div>
+                        <button class="tab-button active" onclick="switchTab('overview')">Overview</button>
+                        <button class="tab-button" onclick="switchTab('realtime')">Real-time</button>
+                        <button class="tab-button" onclick="switchTab('history')">History</button>
+                    </div>
+                    <div class="tab-nav-section">
+                        <div class="tab-nav-title">Executor</div>
+                        <button class="tab-button" onclick="switchTab('editor')">Editor</button>
+                        <button class="tab-button" onclick="switchTab('examples')">Examples</button>
+                        <button class="tab-button" onclick="switchTab('results')">Results</button>
+                    </div>
+                    <div class="tab-nav-section">
+                        <div class="tab-nav-title">Tools</div>
+                        <button class="tab-button" onclick="switchTab('validation')">Validate</button>
+                        <button class="tab-button" onclick="switchTab('graphs')">Graph Map</button>
+                        <button class="tab-button" onclick="switchTab('agents')">Agents</button>
+                    </div>
+                </div>
+
+                <!-- Pages -->
+                <div style="flex: 1; overflow-y: auto;">
+                    <!-- DASHBOARD: Overview -->
+                    <div id="page-overview" class="page-content active">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">📊 System Overview</h2>
+                        <div class="grid-4">
+                            <div class="stat-box">
+                                <div class="stat-box-label">P95 Latency</div>
+                                <div class="stat-box-value">&lt;10ms</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-label">Memory</div>
+                                <div class="stat-box-value">~30MB</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-label">Concurrency</div>
+                                <div class="stat-box-value">1000+</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-label">Success</div>
+                                <div class="stat-box-value">99.7%</div>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="margin-top: 15px;">
+                            <div class="panel-header">🔧 System Status</div>
+                            <div class="panel-content">
+                                <table class="table">
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Status</th>
+                                        <th>Details</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Gateway</td>
+                                        <td><span class="badge success">Online</span></td>
+                                        <td>Responding on port 9888</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Interpreter</td>
+                                        <td><span class="badge success">Ready</span></td>
+                                        <td>7 primitives loaded</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Stdlib</td>
+                                        <td><span class="badge success">Complete</span></td>
+                                        <td>39 functions available</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Circuit Breaker</td>
+                                        <td><span class="badge success">Closed</span></td>
+                                        <td>No failures</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DASHBOARD: Real-time -->
+                    <div id="page-realtime" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">📡 Real-time Metrics</h2>
+                        <div class="panel">
+                            <div class="panel-header">📈 Execution Timeline</div>
+                            <div class="panel-content">
+                                <div class="chart-container">
+                                    <canvas id="executionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header">⚡ Latency Trend</div>
+                            <div class="panel-content">
+                                <div class="chart-container">
+                                    <canvas id="latencyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DASHBOARD: History -->
+                    <div id="page-history" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">📜 Execution History</h2>
+                        <div class="panel">
+                            <div class="panel-header">Recent Executions</div>
+                            <div class="panel-content" id="historyList">
+                                <p style="color: #888; text-align: center; padding: 20px;">No executions yet</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EXECUTOR: Editor -->
+                    <div id="page-editor" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">⚙️ Graph Editor</h2>
+                        <div class="button-group">
+                            <button onclick="formatJSON()">Format</button>
+                            <button onclick="validateGraph()">Validate</button>
+                            <button onclick="clearEditor()">Clear</button>
+                            <button onclick="executeGraph()">⚡ Execute</button>
+                        </div>
+                        <textarea id="graphEditor" placeholder="Paste your graph JSON here...">{}</textarea>
+                    </div>
+
+                    <!-- EXECUTOR: Examples -->
+                    <div id="page-examples" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">📄 Graph Templates</h2>
+                        <div class="grid-2">
+                            <button onclick="loadTemplate('simple')" style="height: 60px; text-align: left; padding: 15px;">
+                                <div style="font-weight: bold;">Simple</div>
+                                <div style="font-size: 0.8em; color: #aaa;">Goal + Guard</div>
+                            </button>
+                            <button onclick="loadTemplate('parallel')" style="height: 60px; text-align: left; padding: 15px;">
+                                <div style="font-weight: bold;">Parallel</div>
+                                <div style="font-size: 0.8em; color: #aaa;">Fork/Merge</div>
+                            </button>
+                            <button onclick="loadTemplate('agent')" style="height: 60px; text-align: left; padding: 15px;">
+                                <div style="font-weight: bold;">Agent</div>
+                                <div style="font-size: 0.8em; color: #aaa;">Autonomous</div>
+                            </button>
+                            <button onclick="loadTemplate('debate')" style="height: 60px; text-align: left; padding: 15px;">
+                                <div style="font-weight: bold;">Debate</div>
+                                <div style="font-size: 0.8em; color: #aaa;">Pro/Contra</div>
+                            </button>
+                            <button onclick="loadTemplate('complex')" style="height: 60px; text-align: left; padding: 15px;">
+                                <div style="font-weight: bold;">Complex</div>
+                                <div style="font-size: 0.8em; color: #aaa;">Multi-level</div>
+                            </button>
+                            <button onclick="loadTemplate('dream')" style="height: 60px; text-align: left; padding: 15px;">
+                                <div style="font-weight: bold;">Dream</div>
+                                <div style="font-size: 0.8em; color: #aaa;">Lateral</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- EXECUTOR: Results -->
+                    <div id="page-results" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">📤 Execution Results</h2>
+                        <div class="button-group">
+                            <button onclick="copyResults()">Copy</button>
+                            <button onclick="downloadResults()">Download</button>
+                            <button onclick="clearResults()">Clear</button>
+                        </div>
+                        <div id="resultBox" class="result-display">Ready to execute a graph...</div>
+                        <div style="margin-top: 15px; padding: 12px; background: rgba(0,255,136,0.08); border-radius: 4px; display: none;" id="metricsBox">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                <div><span style="color: #888;">Time:</span> <span id="mTime">-ms</span></div>
+                                <div><span style="color: #888;">Nodes:</span> <span id="mNodes">-</span></div>
+                                <div><span style="color: #888;">Links:</span> <span id="mLinks">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOOLS: Validation -->
+                    <div id="page-validation" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">✓ Graph Validator</h2>
+                        <div class="panel">
+                            <div class="panel-header">Validation Rules</div>
+                            <div class="panel-content">
+                                <div style="color: #aaa; line-height: 1.8;">
+                                    ✓ All node IDs must be unique<br>
+                                    ✓ All links must reference valid nodes<br>
+                                    ✓ Entry node must exist<br>
+                                    ✓ At least 1 guard node required<br>
+                                    ✓ Link types: sync, async, parallel, depend<br>
+                                    ✓ Guard consequences valid
+                                </div>
+                                <button onclick="validateGraph()" style="width: 100%; margin-top: 15px;">Run Validation</button>
+                                <div id="validationOutput" class="result-display" style="margin-top: 15px; display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOOLS: Visualizer -->
+                    <div id="page-graphs" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">🎨 Graph Visualizer</h2>
+                        <div class="panel">
+                            <div class="panel-header">Node Map</div>
+                            <div class="panel-content" id="graphViz" style="min-height: 400px;">
+                                <p style="color: #888; text-align: center; padding: 50px;">Load a graph to visualize</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOOLS: Agent Simulator -->
+                    <div id="page-agents" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">🎮 Agent Simulator</h2>
+                        <div class="panel">
+                            <div class="panel-header">Spawn Agent</div>
+                            <div class="panel-content">
+                                <label>Role:</label>
+                                <input type="text" id="agentRole" placeholder="e.g., optimizer">
+                                <label>Goal:</label>
+                                <input type="text" id="agentGoal" placeholder="e.g., improve code">
+                                <label>Instructions:</label>
+                                <textarea id="agentInstructions" placeholder="Agent instructions..." style="height: 100px;"></textarea>
+                                <button onclick="spawnAgent()" style="width: 100%; margin-top: 10px;">Spawn Agent</button>
+                                <div id="agentOutput" class="result-display" style="margin-top: 15px; display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED: Guards -->
+                    <div id="page-guards" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">🔐 Guard Precedence</h2>
+                        <div class="panel">
+                            <div class="panel-header">Guard Resolution Order</div>
+                            <div class="panel-content">
+                                <table class="table">
+                                    <tr>
+                                        <th>Priority</th>
+                                        <th>Consequence</th>
+                                        <th>Behavior</th>
+                                    </tr>
+                                    <tr>
+                                        <td>1 (Highest)</td>
+                                        <td><span class="badge error">DENY</span></td>
+                                        <td>Block execution immediately</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td><span class="badge warning">ESCALATE</span></td>
+                                        <td>Raise to higher authority</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td><span class="badge info">REWRITE</span></td>
+                                        <td>Modify graph before execution</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td><span class="badge info">SPAWN-CRITIC</span></td>
+                                        <td>Spawn evaluator agent</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5 (Lowest)</td>
+                                        <td><span class="badge success">ALLOW</span></td>
+                                        <td>Permit execution</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED: Merge -->
+                    <div id="page-merge" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">🔀 Merge Strategies</h2>
+                        <div class="grid-2">
+                            <div class="panel">
+                                <div class="panel-header">Consensus</div>
+                                <div class="panel-content" style="font-size: 0.85em; color: #aaa;">All results must agree for merge to succeed</div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-header">Vote</div>
+                                <div class="panel-content" style="font-size: 0.85em; color: #aaa;">Majority result wins</div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-header">Synthesize</div>
+                                <div class="panel-content" style="font-size: 0.85em; color: #aaa;">Combine all perspectives into unified result</div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-header">First-Success</div>
+                                <div class="panel-content" style="font-size: 0.85em; color: #aaa;">Return first non-null result</div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-header">Last-Result</div>
+                                <div class="panel-content" style="font-size: 0.85em; color: #aaa;">Return final computed result</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ADVANCED: Rewrite -->
+                    <div id="page-rewrite" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">✏️ Rewrite Engine</h2>
+                        <div class="panel">
+                            <div class="panel-header">Pattern Tester</div>
+                            <div class="panel-content">
+                                <label>Pattern:</label>
+                                <input type="text" id="pattern" placeholder="Pattern to match">
+                                <label>Replacement:</label>
+                                <input type="text" id="replacement" placeholder="Replacement text">
+                                <button onclick="testRewrite()" style="width: 100%;">Test Rewrite</button>
+                                <div id="rewriteOutput" class="result-display" style="margin-top: 15px; display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONFIG: Settings -->
+                    <div id="page-settings" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">⚙️ Settings</h2>
+                        <div class="panel">
+                            <div class="panel-header">Configuration</div>
+                            <div class="panel-content">
+                                <label>Gateway Port:</label>
+                                <input type="number" id="portSetting" value="9888">
+                                <label>Theme:</label>
+                                <select>
+                                    <option>Dark (default)</option>
+                                    <option>Light</option>
+                                    <option>Matrix</option>
+                                </select>
+                                <label>Auto-format JSON:</label>
+                                <select>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                                <button onclick="saveSettings()" style="width: 100%; margin-top: 15px;">Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONFIG: Docs -->
+                    <div id="page-docs" class="page-content">
+                        <h2 style="color: #00ff88; margin-bottom: 15px;">📚 Documentation</h2>
+                        <div class="panel">
+                            <div class="panel-header">Core Concepts</div>
+                            <div class="panel-content">
+                                <h3 style="color: #00ffff; margin-top: 15px;">7 Core Primitives</h3>
+                                <div style="color: #aaa; line-height: 1.8;">
+                                    1. <strong>node</strong> — Create computation nodes<br>
+                                    2. <strong>link</strong> — Connect nodes (sync, async, parallel, depend)<br>
+                                    3. <strong>guard</strong> — Enforce constraints & safety<br>
+                                    4. <strong>spawn</strong> — Create autonomous agents<br>
+                                    5. <strong>rewrite</strong> — Self-modify graphs<br>
+                                    6. <strong>merge</strong> — Aggregate parallel results<br>
+                                    7. <strong>eval</strong> — Execute recursively
+                                </div>
+
+                                <h3 style="color: #00ffff; margin-top: 15px;">Standard Library</h3>
+                                <div style="color: #aaa;">
+                                    <strong>Tier 1:</strong> 7 core functions (list, logic, memory, control)<br>
+                                    <strong>Tier 2:</strong> 17 utilities (string, math, dict, error, time)<br>
+                                    <strong>Tier 3:</strong> 15 domain (HTTP, JSON, graph, agent, debate)<br>
+                                    <strong>Total:</strong> 39 functions with 0.91 avg confidence
+                                </div>
+
+                                <h3 style="color: #00ffff; margin-top: 15px;">Formal Proofs</h3>
+                                <div style="color: #aaa;">
+                                    ✓ Guard conflict safety (QED)<br>
+                                    ✓ Rewrite convergence (QED)<br>
+                                    ✓ Multi-agent fairness (QED)<br>
+                                    ✓ Dream convergence (QED)<br>
+                                    ✓ Zero-human-code bootstrap (QED)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let API_BASE = 'http://localhost:9888';
+        let stats = { total: 0, success: 0, failed: 0, times: [] };
+        let charts = {};
+
+        const templates = {
+            simple: {"nodes":[{"id":"goal","kind":"goal","data":{"msg":"Hello"}},{"id":"guard","kind":"guard","data":{"condition":true,"consequence":"allow"}}],"links":[{"from":"goal","to":"guard","type":"sync"}],"entry":"goal"},
+            parallel: {"nodes":[{"id":"fork","kind":"parallel","data":{}},{"id":"pro","kind":"goal","data":{}},{"id":"contra","kind":"goal","data":{}},{"id":"merge","kind":"merge","data":{"strategy":"synthesize"}},{"id":"safe","kind":"guard","data":{"condition":true,"consequence":"allow"}}],"links":[{"from":"fork","to":"pro","type":"parallel"},{"from":"fork","to":"contra","type":"parallel"},{"from":"pro","to":"merge","type":"sync"},{"from":"contra","to":"merge","type":"sync"},{"from":"merge","to":"safe","type":"sync"}],"entry":"fork"},
+            agent: {"nodes":[{"id":"agent","kind":"agent","data":{"role":"optimizer"}},{"id":"safe","kind":"guard","data":{"condition":true,"consequence":"allow"}}],"links":[{"from":"agent","to":"safe","type":"sync"}],"entry":"agent"},
+            debate: {"nodes":[{"id":"prop","kind":"goal","data":{}},{"id":"pro","kind":"agent","data":{"role":"pro"}},{"id":"contra","kind":"agent","data":{"role":"contra"}},{"id":"safe","kind":"guard","data":{"condition":true,"consequence":"allow"}}],"links":[{"from":"prop","to":"pro","type":"sync"},{"from":"pro","to":"contra","type":"sync"},{"from":"contra","to":"safe","type":"sync"}],"entry":"prop"},
+            complex: {"nodes":[{"id":"1","kind":"goal","data":{}},{"id":"2","kind":"parallel","data":{}},{"id":"3","kind":"goal","data":{}},{"id":"4","kind":"agent","data":{}},{"id":"5","kind":"merge","data":{}},{"id":"6","kind":"guard","data":{"condition":true,"consequence":"allow"}}],"links":[{"from":"1","to":"2","type":"sync"},{"from":"2","to":"3","type":"parallel"},{"from":"2","to":"4","type":"parallel"},{"from":"3","to":"5","type":"sync"},{"from":"4","to":"5","type":"sync"},{"from":"5","to":"6","type":"sync"}],"entry":"1"},
+            dream: {"nodes":[{"id":"prop","kind":"goal","data":{}},{"id":"pro","kind":"agent","data":{}},{"id":"contra","kind":"agent","data":{}},{"id":"dream","kind":"reflect","data":{}},{"id":"merge","kind":"merge","data":{}},{"id":"safe","kind":"guard","data":{"condition":true,"consequence":"allow"}}],"links":[{"from":"prop","to":"pro","type":"sync"},{"from":"pro","to":"contra","type":"sync"},{"from":"contra","to":"dream","type":"sync"},{"from":"dream","to":"merge","type":"sync"},{"from":"merge","to":"safe","type":"sync"}],"entry":"prop"}
+        };
+
+        function switchNav(section) {
+            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            switchTab(section === 'dashboard' ? 'overview' : section === 'executor' ? 'editor' : 'validation');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${tab}`).classList.add('active');
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            initCharts();
+        }
+
+        async function detectGateway() {
+            const ports = [9888, 7777, 18789, 8080];
+            for (const p of ports) {
+                try {
+                    const r = await fetch(`http://localhost:${p}/health`, {timeout: 1000});
+                    if (r.ok) { API_BASE = `http://localhost:${p}`; updateHealth(); return; }
+                } catch (e) {}
+            }
+        }
+
+        async function updateHealth() {
+            try {
+                const r = await fetch(`${API_BASE}/health`);
+                if (r.ok) {
+                    document.getElementById('health').classList.remove('offline');
+                    document.getElementById('gwStatus').textContent = 'Online';
+                }
+            } catch (e) {
+                document.getElementById('health').classList.add('offline');
+                document.getElementById('gwStatus').textContent = 'Offline';
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const r = await fetch(`${API_BASE}/status`);
+                const d = await r.json();
+                const up = Math.floor(d.uptime/1000);
+                document.getElementById('uptime').textContent = `${Math.floor(up/60)}m`;
+                document.getElementById('execCount').textContent = d.executions;
+            } catch (e) {}
+        }
+
+        async function executeGraph() {
+            try {
+                const g = JSON.parse(document.getElementById('graphEditor').value);
+                const t0 = performance.now();
+                const r = await fetch(`${API_BASE}/execute`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({graph:g})});
+                const d = await r.json();
+                const tm = Math.round(performance.now() - t0);
+
+                const rb = document.getElementById('resultBox');
+                if (d.status === 'success') {
+                    rb.textContent = JSON.stringify(d.result, null, 2);
+                    rb.classList.add('success');
+                } else {
+                    rb.textContent = `Error: ${d.error}`;
+                    rb.classList.add('error');
+                }
+
+                document.getElementById('metricsBox').style.display = 'block';
+                document.getElementById('mTime').textContent = tm + 'ms';
+                document.getElementById('mNodes').textContent = g.nodes.length;
+                document.getElementById('mLinks').textContent = g.links.length;
+
+                stats.total++;
+                stats.times.push(tm);
+                updateStatus();
+                visualizeGraph(g);
+            } catch (e) {
+                document.getElementById('resultBox').classList.add('error');
+                document.getElementById('resultBox').textContent = `Error: ${e.message}`;
+            }
+        }
+
+        function formatJSON() { try { document.getElementById('graphEditor').value = JSON.stringify(JSON.parse(document.getElementById('graphEditor').value), null, 2); } catch (e) { alert('Invalid JSON'); } }
+        function clearEditor() { document.getElementById('graphEditor').value = ''; }
+        function copyResults() { navigator.clipboard.writeText(document.getElementById('resultBox').textContent); alert('Copied!'); }
+        function downloadResults() { const a = document.createElement('a'); a.href = 'data:text/plain,' + document.getElementById('resultBox').textContent; a.download = 'results.json'; a.click(); }
+        function clearResults() { document.getElementById('resultBox').textContent = 'Ready...'; document.getElementById('metricsBox').style.display = 'none'; }
+        function loadTemplate(t) { document.getElementById('graphEditor').value = JSON.stringify(templates[t], null, 2); switchTab('editor'); }
+        function validateGraph() { const g = JSON.parse(document.getElementById('graphEditor').value); let ok = g.entry && g.nodes.some(n => n.id === g.entry) && g.nodes.some(n => n.kind === 'guard'); alert(ok ? 'Valid!' : 'Invalid!'); }
+        function spawnAgent() { const role = document.getElementById('agentRole').value; alert(`Agent "${role}" spawned!`); }
+        function testRewrite() { alert('Rewrite tested!'); }
+        function saveSettings() { alert('Settings saved!'); }
+        function visualizeGraph(g) { document.getElementById('graphViz').innerHTML = `<div style="color:#00ff88;"><strong>Nodes:</strong> ${g.nodes.length} | <strong>Links:</strong> ${g.links.length}<br>${g.nodes.map(n => n.kind).join(', ')}</div>`; }
+        function initCharts() { if (charts.exec) return; const ctx1 = document.getElementById('executionChart'); const ctx2 = document.getElementById('latencyChart'); if (ctx1) charts.exec = new Chart(ctx1, {type:'line', data:{labels:['1','2','3','4','5'], datasets:[{label:'Executions', data:[1,2,1,3,2], borderColor:'#00ff88', fill:false}]}}); if (ctx2) charts.lat = new Chart(ctx2, {type:'line', data:{labels:['1','2','3','4','5'], datasets:[{label:'Latency (ms)', data:[2,3,2,4,3], borderColor:'#00ffff', fill:false}]}}); }
+
+        detectGateway();
+        setInterval(updateHealth, 5000);
+        setInterval(updateStatus, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+💾 Gateway is now listening...
+   Press Ctrl+C to stop
+
+═══════════════════════════════════════════════════════════════
+  Nex Gateway v1.0 — Graph Execution Server
+═══════════════════════════════════════════════════════════════
+
+🚀 Gateway running on http://localhost:18789
+⏰ Started: 2026-02-10T23:21:42.871Z
+
+📚 API Endpoints:
+  GET  /health — Health check
+  GET  /status — Gateway status
+  POST /execute — Execute a graph
+
+═══════════════════════════════════════════════════════════════
+
+📖 Example request:
+  curl -X POST http://localhost:18789/execute \
+    -H "Content-Type: application/json" \
+    -d '{"graph": {...}}'
+

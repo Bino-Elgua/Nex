@@ -165,7 +165,8 @@ class NexGateway {
 }
 
 async function main() {
-  const gateway = new NexGateway(18789);
+  const port = process.env.NEX_PORT ? parseInt(process.env.NEX_PORT) : 18789;
+  const gateway = new NexGateway(port);
   gateway.start();
 
   console.log("💾 Gateway is now listening...");

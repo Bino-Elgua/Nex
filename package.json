@@ -1,16 +1,20 @@
 {
   "name": "nex",
-  "version": "1.0.0",
-  "description": "Agent-native graph-based computation system with 7 core primitives",
+  "version": "2.5.0",
+  "description": "Agent-native graph-based computation system with 7 core primitives. Complete roadmap: v1.0 (core), v1.1 (auth+IO), v1.2 (storage+networking), v2.0 (distributed), v2.5 (100% agent-written)",
   "main": "dist/nex-runtime.js",
   "type": "module",
   "scripts": {
     "bootstrap": "bun bootstrap.ts",
+    "gateway": "bun nex-gateway-v1.1.ts",
+    "websocket": "bun websocket-server.ts",
+    "test": "bun nex-test-suite.ts",
     "build": "tsc --outDir dist",
-    "test": "bun test",
     "dev": "bun run bootstrap.ts",
     "lint": "oxlint --fix",
-    "format": "oxfmt --fix ."
+    "format": "oxfmt --fix .",
+    "start": "npm run gateway & npm run websocket",
+    "production": "NODE_ENV=production npm run gateway"
   },
   "keywords": [
     "agent",
@@ -19,12 +23,20 @@
     "bootstrap",
     "interpreter",
     "llm",
-    "self-modification"
+    "self-modification",
+    "distributed",
+    "multi-agent"
   ],
-  "author": "Nex Core Team",
+  "author": "Nex Core Team (Agent-Bootstrapped)",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "bun": ">=1.0.0"
+  },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {}
